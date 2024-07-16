@@ -1,7 +1,9 @@
-import { Controller, Post, Get, Param, Delete, Patch, Body, Inject, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Get, Param, Delete, Patch, Body, Inject, Query, BadRequestException, ParseIntPipe } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom } from 'rxjs';
 import { PaginationDto } from 'src/common';
+import { CreateProductDto } from 'src/common/dto/create-product.dto';
+import { UpdateProductDto } from 'src/common/dto/update-product.dto';
 import { PRODUCTS_SERVICE } from 'src/config';
 
 
@@ -12,8 +14,30 @@ export class ProductsController {
   ) { }
 
   @Post()
-  createProduc() {
-    return "Crea un producto";
+  async createProduct(
+    @Body() createProductDto: CreateProductDto
+  ) {
+    console.log({createProductDto});
+    
+    return this.productsClient
+      .send(
+        { cmd: 'createProduct' },  createProductDto 
+      ).pipe(
+        catchError(err => { throw new RpcException(err) })
+      )
+
+    //  try {
+    //   //Observable
+    //   const product = await firstValueFrom(
+    //       this.productsClient.send({ cmd: 'createProduct' }, { //send is an observable
+    //         createProductDto,
+    //       })
+    //   );
+
+    //   return product;
+    // } catch (error) {
+    //   throw new RpcException(error);
+    // }
   }
 
   @Get()
@@ -25,29 +49,66 @@ export class ProductsController {
 
   @Get(':id')
   async findOne(@Param('id') id: number) {
-    try {
-      //Observable
-      const product = await firstValueFrom(
-          this.productsClient.send({ cmd: 'findProduct' }, { //send is an observable
-            id,
-          })
-      );
+    //* Way 1
+    //? Another way to catch the errors using absorvables
 
-      return product;
-    } catch (error) {
-      throw new RpcException(error);
-    }
+    return this.productsClient.
+      send({ cmd: 'findProduct' }, { id })
+      .pipe(catchError(err => { throw new RpcException(err) }))
+      ;
+
+
+    //* Way 2
+    // try {
+    //   //Observable
+    //   const product = await firstValueFrom(
+    //       this.productsClient.send({ cmd: 'findProduct' }, { //send is an observable
+    //         id,
+    //       })
+    //   );
+
+    //   return product;
+    // } catch (error) {
+    //   throw new RpcException(error);
+    // }
   }
 
   @Delete(':id')
   deleteProduct(@Param('id') id: string) {
-    return "Esta funcion elimina el producto " + id;
+    return this.productsClient.send(
+      { cmd: 'removeProduct' }, {id}
+    ).pipe(catchError(err => { console.log("hola");
+     throw new RpcException(err) }))
   }
 
+  // @Patch(':id')
+  // updateProduct(
+  //   @Param('id',ParseIntPipe) id: number,
+  //   @Body() updateProductDto: UpdateProductDto) {
+  //   return this.productsClient.send(
+  //     { cmd: 'updateProduct' },
+  //     {...updateProductDto, id}
+  //   ).pipe(catchError(err => { throw new RpcException(err) }))
+    
+  // }
+
   @Patch(':id')
-  updateProduct(
-    @Param('id') id: string,
-    @Body() body: any) {
-    return "Esta funcion se encarga de actualizar un producto " + id;
+  patchProduct(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
+    return this.productsClient
+      .send(
+        { cmd: 'update_product' },
+        {
+          id,
+          ...updateProductDto,
+        },
+      )
+      .pipe(
+        catchError((err) => {
+          throw new RpcException(err);
+        }),
+      );
   }
 }
