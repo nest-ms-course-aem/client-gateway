@@ -13,7 +13,6 @@ export class OrdersController {
 
   @Post()
   async create(@Body() createOrderDto: CreateOrderDto) {
-    console.log("entreeee");
     try {
       return await firstValueFrom(this.productsClient.send('createOrder', 
         createOrderDto
@@ -43,7 +42,7 @@ export class OrdersController {
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     try {
-      return await firstValueFrom( this.productsClient.send('findOneOrder', id));
+      return await firstValueFrom( this.productsClient.send('findOneOrder', {id}));
       
     } catch (error) {
       console.log(
