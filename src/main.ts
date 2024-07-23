@@ -11,6 +11,7 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
+  app.useGlobalFilters(new RpcCustomExceptionFilter());
 
   app.setGlobalPrefix('api');
 
@@ -21,7 +22,6 @@ async function bootstrap() {
     })
   );
 
-  app.useGlobalFilters(new RpcCustomExceptionFilter());
 
   await app.listen(port);
 

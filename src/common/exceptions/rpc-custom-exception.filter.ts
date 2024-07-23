@@ -2,14 +2,17 @@ import { Catch, RpcExceptionFilter, ArgumentsHost, UnauthorizedException, Except
 import { Observable, throwError } from 'rxjs';
 import { RpcException } from '@nestjs/microservices';
 import { isNil } from 'lodash'
+import { error } from 'console';
 
 @Catch(RpcException)
 export class RpcCustomExceptionFilter implements ExceptionFilter {
+  private readonly logger: Logger = new Logger('RpcException');
   catch(exception: RpcException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
 
     const rpcError = exception.getError();
+
 
     if (
       typeof rpcError === 'object' &&
@@ -18,9 +21,12 @@ export class RpcCustomExceptionFilter implements ExceptionFilter {
     ) {
       
       const status = isNaN(+rpcError.status) ? 400 :+rpcError.status;
-      return response.status(status).json(rpcError);
+
+      this.logger.error(`status: ${status}, error" ${rpcError.message}`);
+      return response.status(status).json(rpcError.message);
     }
     
+    this.logger.error(`status: ${400}, error" ${rpcError}`);
     response.status(400).json({
       status: 400,
       message: rpcError,
