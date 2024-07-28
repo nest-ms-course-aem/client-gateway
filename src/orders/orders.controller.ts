@@ -1,11 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, ParseIntPipe, ParseUUIDPipe, Query } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { Controller, Get, Post, Body, Patch, Param,Inject, ParseUUIDPipe, Query } from '@nestjs/common';
 import { ORDERS_SERVICE } from 'src/config/service';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { catchError, firstValueFrom } from 'rxjs';
 import { OrderPaginationDto } from './dto/order-pagination.dto';
 import { PaginationDto } from 'src/common';
 import { ValidStatusDto } from './dto/valid-status.dto';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Controller('orders')
 export class OrdersController {
