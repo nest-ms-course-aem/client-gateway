@@ -4,22 +4,22 @@ import { catchError, firstValueFrom } from 'rxjs';
 import { PaginationDto } from 'src/common';
 import { CreateProductDto } from 'src/common/dto/create-product.dto';
 import { UpdateProductDto } from 'src/common/dto/update-product.dto';
-import { PRODUCTS_SERVICE } from 'src/config';
+import { NATS_SERVICE } from 'src/config/service';
+
 
 
 @Controller('products')
 export class ProductsController {
   constructor(
-    @Inject(PRODUCTS_SERVICE) private readonly productsClient: ClientProxy
+    //For TCP Direct Cx @Inject(PRODUCTS_SERVICE) private readonly productsClient: ClientProxy
+    @Inject(NATS_SERVICE) private readonly natsClient: ClientProxy
   ) { }
 
   @Post()
   async createProduct(
     @Body() createProductDto: CreateProductDto
   ) {
-    console.log({createProductDto});
-    
-    return this.productsClient
+    return this.natsClient
       .send(
         { cmd: 'createProduct' },  createProductDto 
       ).pipe(
@@ -42,7 +42,7 @@ export class ProductsController {
 
   @Get()
   findAllProducts(@Query() paginationDto: PaginationDto) {
-    return this.productsClient.send({ cmd: 'findAllProducts' }, {
+    return this.natsClient.send({ cmd: 'findAllProducts' }, {
       ...paginationDto
     }) //The object we need to match with the products ms controller
   }
@@ -52,7 +52,7 @@ export class ProductsController {
     //* Way 1
     //? Another way to catch the errors using absorvables
 
-    return this.productsClient.
+    return this.natsClient.
       send({ cmd: 'findProduct' }, { id })
       .pipe(catchError(err => { throw new RpcException(err) }))
       ;
@@ -75,7 +75,7 @@ export class ProductsController {
 
   @Delete(':id')
   deleteProduct(@Param('id') id: string) {
-    return this.productsClient.send(
+    return this.natsClient.send(
       { cmd: 'removeProduct' }, {id}
     ).pipe(catchError(err => { console.log("hola");
      throw new RpcException(err) }))
@@ -97,7 +97,7 @@ export class ProductsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateProductDto: UpdateProductDto,
   ) {
-    return this.productsClient
+    return this.natsClient
       .send(
         { cmd: 'update_product' },
         {
