@@ -29,9 +29,10 @@ export class OrdersController {
   async findAll(
     @Query() orderPaginationDto: OrderPaginationDto
   ) {
-    
     try {
-      return await firstValueFrom(this.natsClient.send('findAllOrders', orderPaginationDto));
+      const orders = await firstValueFrom(this.natsClient.send('findAllOrders', orderPaginationDto));
+
+      return orders;
 
     } catch (error) {
       throw new RpcException(error);
