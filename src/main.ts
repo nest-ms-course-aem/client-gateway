@@ -22,6 +22,8 @@ async function bootstrap() {
     })
   );
 
+  console.log("Youuuu what up team, CR7 the king");
+  
 
   await app.listen(port);
 
