@@ -1,0 +1,18 @@
+FROM node:21-alpine3.19
+
+WORKDIR /usr/src/app
+
+# this * includes the lock
+COPY package*.json ./ 
+
+RUN yarn install
+
+COPY . .
+
+RUN yarn build
+
+EXPOSE 3000
+EXPOSE 4200
+
+CMD [ "node", "dist/main.js" ]
+
