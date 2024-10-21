@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { envs } from './config';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { RpcCustomExceptionFilter } from './common';
 
 async function bootstrap() {
@@ -13,7 +13,13 @@ async function bootstrap() {
 
   app.useGlobalFilters(new RpcCustomExceptionFilter());
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    //This exclusion helps to avoid seeting the prefix /api with the @Get method, so in the end you jus do: localhost:3000 instead of localhost3000/api    exclude: 
+    exclude: [{
+      path: '',
+      method: RequestMethod.GET,
+    }]
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -22,10 +28,13 @@ async function bootstrap() {
     })
   );
 
-  console.log("Second change");
   
 
   await app.listen(port);
+
+
+  console.log('Health Check Configured');
+  
 
   logger.verbose(`Client Gateway running on port: ${port}`);
 }
